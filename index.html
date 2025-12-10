@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>HackMD Conventer</title>
+<style>
+body { font-family: Arial, sans-serif; padding: 30px; background: #f9f9f9; }
+h1 { color: #333; }
+input { width: 60%; padding: 8px; }
+button { padding: 8px 12px; margin-left: 10px; }
+textarea { width: 100%; height: 300px; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1><center>HackMD 筆記下載</center></h1>
+<h2><font color=blue>🌟 請輸入預轉換的 HackMD 筆記網址：</font></h2>
+
+<input type="text" id="urlInput" placeholder="https://hackmd.io/@username/note_id">
+<button onclick="downloadNote()">下載Markdown筆記</button>
+
+<p><font color=red size="5">💡 網址輸入小技巧：</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;👉 輸入 HackMD 完整網址 ➡️ 下載單篇<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;👉 輸入 https://hackmd.io/@作者帳號 ➡️ 自動下載全部筆記<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;👉 輸入 https://hackmd.io/@作者帳號/文章標題 ➡️ 下載單篇<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;👉 輸入 https://hackmd.io/@作者帳號/collection/xxx ➡️ 下載全部合集<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;👉 輸入 https://hackmd.io/@j作者帳號?view=all ➡️ 下載全部<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;👉 或輸入任何 HackMD 主頁 ➡️ 自動抓取所有筆記</p>
+
+<center><font color=red size="5"> ‼️ 網頁製作純屬娛樂，請尊重個人智慧財產權‼️</font></center>
+
+<textarea id="output" placeholder="Markdown筆記內容語法會顯示在這裡"></textarea>
+
+<script>
+async function downloadNote() {
+    const url = document.getElementById('urlInput').value.trim();
+    if(!url) { alert("請輸入 HackMD 網址"); return; }
+
+    const output = document.getElementById('output');
+    output.value = "正在下載筆記...\n";
+
+    try {
+        // 轉換成下載 URL
+        let notePath = new URL(url).pathname.replace(/^\/+/,'');
+        let downloadUrl = `https://hackmd.io/${notePath}/download`;
+
+        // fetch Markdown
+        const response = await fetch(downloadUrl);
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
+        const mdText = await response.text();
+
+        // 顯示內容
+        output.value = mdText;
+
+        // 自動下載 .md
+        const safeTitle = notePath.replace(/[\/\\:*?"<>|]/g, "_");
+        const blob = new Blob([mdText], {type: "text/markdown;charset=utf-8"});
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = safeTitle + ".md";
+        link.click();
+
+        alert("筆記已下載完成！");
+    } catch (err) {
+        output.value = "";
+        alert("下載失敗: " + err);
+    }
+}
+</script>
+
+</body>
+</html>
